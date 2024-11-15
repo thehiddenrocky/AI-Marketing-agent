@@ -1,3 +1,5 @@
 __pycache__
 config.py
 venv
+.env
+.ipynb_checkpoints/
