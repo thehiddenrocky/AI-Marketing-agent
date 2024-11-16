@@ -39,8 +39,11 @@ def search_subreddits(search_terms, limit=50):
     try:
         for term in search_terms:
             print(f"Searching with term: '{term}'...")
+            term_subreddits = []  
             for subreddit in reddit.subreddits.search(term, limit=limit):
                 subreddits.add(subreddit.display_name)
+                term_subreddits.append(subreddit.display_name)
+            print(f"Found with '{term}': {term_subreddits}")
     except Exception as e:
         print(f"Error during subreddit search: {e}")
     
@@ -197,7 +200,7 @@ def main():
     for idx, info in enumerate(sorted_subreddits, start=1):
         print(f"{idx}. r/{info['name']} - {info['subscribers']} subscribers")
 
-    for info in sorted_subreddits:
+    '''for info in sorted_subreddits:
         subreddit_name = info['name']
         print(f"\nProcessing r/{subreddit_name}...")
         posts = get_subreddit_posts(subreddit_name)
@@ -217,7 +220,7 @@ def main():
 
         time.sleep(2)
 
-    print("\nData collection and extraction completed.")
+    print("\nData collection and extraction completed.")'''
 
 if __name__ == '__main__':
     main()
