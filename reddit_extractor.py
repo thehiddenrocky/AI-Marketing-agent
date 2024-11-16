@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
+from typing import List, Dict
 
 load_dotenv()
 
@@ -21,18 +22,30 @@ reddit = praw.Reddit(client_id=CLIENT_ID,
                      user_agent=USER_AGENT)
 
 
-def search_subreddits(query, limit=50):
+def search_subreddits(search_terms, limit=50):
     """
-    Search for subreddits matching the query.
+    Search for subreddits matching multiple search terms.
+    
+    Args:
+        search_terms (list): List of search queries to use
+        limit (int): Maximum number of subreddits to return per search term
+    
+    Returns:
+        list: List of unique subreddit names found across all search terms
     """
-    print(f"Searching for subreddits matching query: '{query}'...")
-    subreddits = []
+    print(f"Searching for subreddits matching {len(search_terms)} search terms...")
+    subreddits = set()  # Using a set to avoid duplicates
+    
     try:
-        for subreddit in reddit.subreddits.search(query, limit=limit):
-            subreddits.append(subreddit.display_name)
+        for term in search_terms:
+            print(f"Searching with term: '{term}'...")
+            for subreddit in reddit.subreddits.search(term, limit=limit):
+                subreddits.add(subreddit.display_name)
     except Exception as e:
         print(f"Error during subreddit search: {e}")
-    return subreddits
+    
+    return list(subreddits)  # Convert set back to list for consistency
+
 
 def get_subreddit_info(subreddit_name):
     """
@@ -125,7 +138,6 @@ def get_relevant_topics(query):
         - agile tools (methodology + tools)
         - jira alternatives (tool alternative discussions)
         - remote team management (broader problem space)
-
         Return exactly 5 search phrases, one per line.
         Focus on phrases that would lead to active, relevant subreddit communities.
         Do not include any bullets, numbers, or prefixes.
@@ -157,13 +169,14 @@ def get_relevant_topics(query):
 
 def main():
     query = input("Enter the search query for subreddits: ")
-    subreddit_limit = int(input("Enter the number of subreddits to find: "))
     
+    subreddit_limit = int(input("Enter the number of subreddits to find: "))
+     
     search_terms = get_relevant_topics(query)
     found_subreddits = search_subreddits(search_terms, limit=subreddit_limit)
 
     if not found_subreddits:
-        print("No subreddits found with the given query.")
+        print("No subreddits with enough subscribers found with the given query.")
         return
 
     print("\nRetrieving subreddit information...")
