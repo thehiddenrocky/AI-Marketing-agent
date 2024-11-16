@@ -1,0 +1,45 @@
+{
+    "tool_analysis": {
+      "find_tools": {
+        "base_prompt": "From the provided community discussions, identify the most frequently mentioned and discussed tools or software solutions:",
+        "extraction_guide": {
+          "look_for": [
+            "tool recommendations",
+            "software comparisons",
+            "experience sharing",
+            "tool reviews",
+            "pricing discussions"
+          ],
+          "output_format": {
+            "tools": [
+              {
+                "name": "string",
+                "category": "string",
+                "mention_count": "number"
+              }
+            ]
+          }
+        }
+      },
+      "analyze_tools": {
+        "base_prompt": "For each identified tool, provide a concise SWOT analysis based on community discussions:",
+        "extraction_guide": {
+          "strengths": "What advantages and positive features are frequently mentioned?",
+          "weaknesses": "What limitations or problems do users commonly report?",
+          "opportunities": "What potential improvements or unmet needs are discussed?",
+          "threats": "What competing solutions or market changes are mentioned?",
+          "output_format": {
+            "tool_analysis": {
+              "name": "string",
+              "swot": {
+                "strengths": ["string"],
+                "weaknesses": ["string"],
+                "opportunities": ["string"],
+                "threats": ["string"]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
