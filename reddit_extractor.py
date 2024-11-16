@@ -1,11 +1,16 @@
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
+
 
 CLIENT_ID = os.getenv('REDDIT_CLIENT_ID')
 CLIENT_SECRET = os.getenv('REDDIT_CLIENT_SECRET')
 USER_AGENT = os.getenv('REDDIT_USER_AGENT')
+
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+client = OpenAI(api_key=OPENAI_API_KEY)
 
 import praw
 import json
@@ -99,10 +104,63 @@ def get_subreddit_posts(subreddit_name):
 
     return posts_data
 
+def get_relevant_topics(query):
+    """
+    Use OpenAI to generate relevant search phrases for a query
+    """
+    prompt = f"""
+        You are a Reddit search expert who understands how Redditors discuss and search for topics.
+        Given the query "{query}", generate 5 search phrases that will find the most relevant subreddits.
+
+        Consider:
+        - How Redditors naturally phrase their questions/discussions
+        - Common abbreviations and terminology used on Reddit
+        - Related tools, technologies, or concepts frequently discussed
+        - Industry-specific subreddit naming patterns
+        - Problem-focused search terms (as many discussions are about solving problems)
+
+        For example, if query is "project management software":
+        - projectmanagement (direct community)
+        - asana vs trello (tool comparison commonly discussed)
+        - agile tools (methodology + tools)
+        - jira alternatives (tool alternative discussions)
+        - remote team management (broader problem space)
+
+        Return exactly 5 search phrases, one per line.
+        Focus on phrases that would lead to active, relevant subreddit communities.
+        Do not include any bullets, numbers, or prefixes.
+    """
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{
+                "role": "user",
+                "content": prompt
+            }],
+            temperature=0.7,
+            max_tokens=256
+        )
+        
+        # Extract and clean phrases
+        search_phrases = [
+            phrase.strip()
+            for phrase in response.choices[0].message.content.split('\n')
+            if phrase.strip() and not phrase.startswith(('-', '*', '•', '1', '2', '3', '4', '5'))
+        ]
+        
+        print(f"Generated search phrases: {search_phrases}")
+        return search_phrases
+    except Exception as e:
+        print(f"Error generating topics: {e}")
+        return [query]  # Fallback to original query
+
 def main():
     query = input("Enter the search query for subreddits: ")
     subreddit_limit = int(input("Enter the number of subreddits to find: "))
-    found_subreddits = search_subreddits(query, limit=subreddit_limit)
+    
+    search_terms = get_relevant_topics(query)
+    found_subreddits = search_subreddits(search_terms, limit=subreddit_limit)
 
     if not found_subreddits:
         print("No subreddits found with the given query.")
