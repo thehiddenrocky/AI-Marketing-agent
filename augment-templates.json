@@ -1,0 +1,210 @@
+{
+    "market_analysis_templates": {
+      "lead_identification": {
+        "base_prompt": "Analyze the context to identify potential leads and their characteristics:",
+        "analysis_aspects": [
+          {
+            "aspect": "demographic_analysis",
+            "prompt_addition": "Identify demographic patterns of users discussing problems or solutions",
+            "extraction_guide": "Look for mentions of job roles, company types, industry sectors, experience levels",
+            "output_format": {
+              "user_segment": "string",
+              "characteristics": ["string"],
+              "engagement_level": "string",
+              "frequency_of_appearance": "number"
+            }
+          },
+          {
+            "aspect": "buying_signals",
+            "prompt_addition": "Identify expressions of purchase intent or solution seeking",
+            "extraction_guide": "Look for phrases like 'looking for recommendations', 'need a solution', 'willing to pay for'",
+            "output_format": {
+              "intent_type": "string",
+              "urgency_level": "string",
+              "budget_indicators": ["string"],
+              "specific_requirements": ["string"]
+            }
+          },
+          {
+            "aspect": "engagement_patterns",
+            "prompt_addition": "Analyze how potential leads engage with the community",
+            "extraction_guide": "Track question types, response patterns, level of technical knowledge",
+            "output_format": {
+              "engagement_type": "string",
+              "knowledge_level": "string",
+              "common_questions": ["string"],
+              "interaction_frequency": "number"
+            }
+          }
+        ]
+      },
+      "lead_needs_analysis": {
+        "base_prompt": "Analyze specific needs and requirements of potential leads:",
+        "analysis_aspects": [
+          {
+            "aspect": "explicit_needs",
+            "prompt_addition": "Identify directly stated needs and requirements",
+            "extraction_guide": "Look for phrases like 'I need', 'looking for', 'must have', 'required features'",
+            "output_format": {
+              "need_category": "string",
+              "specific_requirements": ["string"],
+              "urgency_indicators": "string",
+              "frequency": "number"
+            }
+          },
+          {
+            "aspect": "implicit_needs",
+            "prompt_addition": "Identify implied needs from problem discussions",
+            "extraction_guide": "Analyze complaints, workarounds, indirect feature requests",
+            "output_format": {
+              "implied_need": "string",
+              "context": "string",
+              "supporting_evidence": ["string"],
+              "potential_solutions": ["string"]
+            }
+          },
+          {
+            "aspect": "budget_constraints",
+            "prompt_addition": "Analyze discussions about pricing and budgets",
+            "extraction_guide": "Look for price sensitivity, budget discussions, value considerations",
+            "output_format": {
+              "price_point": "string",
+              "value_expectations": ["string"],
+              "budget_constraints": "string",
+              "willingness_to_pay": "string"
+            }
+          }
+        ]
+      },
+      "pain_point_analysis": {
+        "base_prompt": "Analyze frequent complaints and pain points:",
+        "analysis_aspects": [
+          {
+            "aspect": "recurring_complaints",
+            "prompt_addition": "Identify patterns in user complaints and frustrations",
+            "extraction_guide": "Track repeated complaints, shared frustrations, common challenges",
+            "output_format": {
+              "complaint_category": "string",
+              "frequency": "number",
+              "impact_level": "string",
+              "affected_users": ["string"]
+            }
+          },
+          {
+            "aspect": "solution_attempts",
+            "prompt_addition": "Analyze how users are trying to solve their problems",
+            "extraction_guide": "Look for mentions of workarounds, alternative solutions, makeshift fixes",
+            "output_format": {
+              "problem": "string",
+              "current_solutions": ["string"],
+              "solution_limitations": ["string"],
+              "desired_improvements": ["string"]
+            }
+          }
+        ]
+      },
+      "competitor_analysis": {
+        "base_prompt": "Analyze mentions and discussions of competing solutions:",
+        "analysis_aspects": [
+          {
+            "aspect": "competitor_identification",
+            "prompt_addition": "Identify all mentioned competitors and alternatives",
+            "extraction_guide": "Track tool mentions, alternative solutions, competing approaches",
+            "output_format": {
+              "competitor_name": "string",
+              "mention_frequency": "number",
+              "market_position": "string",
+              "user_sentiment": "string"
+            }
+          },
+          {
+            "aspect": "feature_comparison",
+            "prompt_addition": "Analyze feature comparisons between competitors",
+            "extraction_guide": "Look for comparative discussions, feature preferences, switching reasons",
+            "output_format": {
+              "competitor": "string",
+              "key_features": ["string"],
+              "advantages": ["string"],
+              "disadvantages": ["string"]
+            }
+          }
+        ]
+      },
+      "feature_gap_analysis": {
+        "base_prompt": "Analyze desired features and improvements in existing tools:",
+        "analysis_aspects": [
+          {
+            "aspect": "missing_features",
+            "prompt_addition": "Identify frequently requested features in existing tools",
+            "extraction_guide": "Look for phrases like 'wish it had', 'missing feature', 'needs to add'",
+            "output_format": {
+              "tool_name": "string",
+              "requested_feature": "string",
+              "request_frequency": "number",
+              "user_impact": "string"
+            }
+          },
+          {
+            "aspect": "improvement_requests",
+            "prompt_addition": "Analyze requests for improvements to existing features",
+            "extraction_guide": "Look for discussions about feature limitations, improvement suggestions",
+            "output_format": {
+              "existing_feature": "string",
+              "desired_improvements": ["string"],
+              "user_frustrations": ["string"],
+              "potential_impact": "string"
+            }
+          }
+        ]
+      },
+      "community_insights": {
+        "base_prompt": "Based on Greg's handbook, analyze community dynamics and opportunities:",
+        "analysis_aspects": [
+          {
+            "aspect": "community_growth",
+            "prompt_addition": "Analyze growth patterns and engagement trends",
+            "extraction_guide": "Track subscriber growth, activity levels, engagement patterns",
+            "output_format": {
+              "growth_rate": "string",
+              "engagement_metrics": ["string"],
+              "community_health": "string",
+              "growth_drivers": ["string"]
+            }
+          },
+          {
+            "aspect": "community_culture",
+            "prompt_addition": "Analyze community culture and behavior patterns",
+            "extraction_guide": "Look for shared values, communication styles, community norms",
+            "output_format": {
+              "cultural_elements": ["string"],
+              "communication_patterns": ["string"],
+              "community_values": ["string"],
+              "behavioral_norms": ["string"]
+            }
+          },
+          {
+            "aspect": "monetization_potential",
+            "prompt_addition": "Analyze potential monetization opportunities",
+            "extraction_guide": "Look for willingness to pay, value perception, monetization models",
+            "output_format": {
+              "opportunity_type": "string",
+              "potential_value": "string",
+              "user_receptiveness": "string",
+              "implementation_suggestions": ["string"]
+            }
+          },
+          {
+            "aspect": "platform_limitations",
+            "prompt_addition": "Identify limitations of the current platform (Reddit)",
+            "extraction_guide": "Look for frustrations with Reddit's features, format limitations, user needs",
+            "output_format": {
+              "limitation_type": "string",
+              "impact": "string",
+              "opportunity_created": "string",
+              "potential_solutions": ["string"]
+            }
+          }
+        ]
+      }
+    }
+  }
