@@ -200,7 +200,7 @@ def main():
     for idx, info in enumerate(sorted_subreddits, start=1):
         print(f"{idx}. r/{info['name']} - {info['subscribers']} subscribers")
 
-    '''for info in sorted_subreddits:
+    for info in sorted_subreddits:
         subreddit_name = info['name']
         print(f"\nProcessing r/{subreddit_name}...")
         posts = get_subreddit_posts(subreddit_name)
@@ -219,8 +219,7 @@ def main():
             print(f"Error saving data for r/{subreddit_name}: {e}")
 
         time.sleep(2)
-
-    print("\nData collection and extraction completed.")'''
+    print("\nData collection and extraction completed.")
 
 if __name__ == '__main__':
     main()
