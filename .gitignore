@@ -3,3 +3,4 @@ config.py
 venv
 .env
 .ipynb_checkpoints/
+chroma_db
