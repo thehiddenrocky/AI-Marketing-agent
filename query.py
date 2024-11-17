@@ -4,6 +4,7 @@ from langchain_openai.embeddings import OpenAIEmbeddings
 import chromadb
 import time
 import json
+from openai import OpenAI
 
 load_dotenv()
 
@@ -132,6 +133,60 @@ def augment_query(query_text: str):
     except:
         return [query_text]
 
+
+def generate_answer(results, query: str):
+    """
+    Generate an answer based on search results using OpenAI.
+    
+    Args:
+        results (dict): Formatted search results from query_and_format_results
+        query (str): Original user query
+    
+    Returns:
+        str: Generated answer
+    """
+    try:
+        # Load prompt template from JSON
+        with open('prompt_config.json', 'r') as f:
+            config = json.load(f)
+        
+        # Format context from results
+        context_parts = []
+        for match in results['matches']:
+            context_parts.append(f"Content: {match['content']}\n")
+            
+        context = "\n".join(context_parts)
+        print ("\n\n Before formatting prompt")
+        print("context: ", context)
+        print("query: ", query)
+        print("instructions: ", config['instructions'])
+        # Format the complete prompt
+        prompt = config['prompt_template'].format(
+            context=context,
+            query=query,
+            instructions=config['instructions']
+        )
+        
+        # Initialize OpenAI client
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        
+        # Generate response
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{
+                "role": "user",
+                "content": prompt
+            }],
+            temperature=0.7,
+            max_tokens=256
+        )
+        
+        return response.choices[0].message.content
+        
+    except Exception as e:
+        print(f"Error generating answer: {e}")
+        return None
+
 # Example usage:
 if __name__ == '__main__':
     # Example 1: Query existing data
@@ -174,9 +229,12 @@ if __name__ == '__main__':
         for augmented_query in augmented_queries:
             print(f"\n=== Search augmented query: {augmented_query} ===")
             results = query_and_format_results(augmented_query, collection_name, n_results)
+            answer = generate_answer(results, augmented_query)
             print_search_results(results)
+            if answer:
+                print("\n=== Generated Answer ===")
+                print(answer)
 
-        # Ask for another search
         another = input("\nWould you like to do another search? (y/n): ")
         if another.lower() != 'y':
             break

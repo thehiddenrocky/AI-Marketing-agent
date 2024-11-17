@@ -1,0 +1,4 @@
+{
+    "prompt_template": "Based on the following information:\n\n{context}\n\nQuestion: {query}\n\n{instructions}",
+    "instructions": "Provide a concise answer based on the context provided. If the information is not sufficient, acknowledge any gaps in the response."
+}
