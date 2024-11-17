@@ -136,14 +136,7 @@ def augment_query(query_text: str):
 
 def generate_answer(results, query: str):
     """
-    Generate an answer based on search results using OpenAI.
-    
-    Args:
-        results (dict): Formatted search results from query_and_format_results
-        query (str): Original user query
-    
-    Returns:
-        str: Generated answer
+    Generate a marketing analysis based on search results using OpenAI.
     """
     try:
         # Load prompt template from JSON
@@ -153,15 +146,23 @@ def generate_answer(results, query: str):
         # Format context from results
         context_parts = []
         for match in results['matches']:
-            context_parts.append(f"Content: {match['content']}\n")
+            # Include metadata for richer context
+            metadata = match['metadata']
+            source_info = f"Source: {metadata['type'].capitalize()}"
+            if metadata['type'] == 'post':
+                source_info += f" - Title: {metadata['title']}"
+            
+            context_parts.append(f"{source_info}\nContent: {match['content']}\n")
             
         context = "\n".join(context_parts)
-        print ("\n\n Before formatting prompt")
-        print("context: ", context)
-        print("query: ", query)
-        print("instructions: ", config['instructions'])
+        
+        print("\n=== Analysis Parameters ===")
+        print("Context length:", len(context))
+        print("Query:", query)
+        
         # Format the complete prompt
         prompt = config['prompt_template'].format(
+            system_prompt=config['system_prompt'],
             context=context,
             query=query,
             instructions=config['instructions']
@@ -170,21 +171,27 @@ def generate_answer(results, query: str):
         # Initialize OpenAI client
         client = OpenAI(api_key=OPENAI_API_KEY)
         
-        # Generate response
+        # Generate response with system and user messages
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
-            messages=[{
-                "role": "user",
-                "content": prompt
-            }],
+            messages=[
+                {
+                    "role": "system",
+                    "content": config['system_prompt']
+                },
+                {
+                    "role": "user",
+                    "content": f"Context:\n{context}\n\nQuestion: {query}\n\n{config['instructions']}"
+                }
+            ],
             temperature=0.7,
-            max_tokens=256
+            max_tokens=1000  # Increased for more detailed analysis
         )
         
         return response.choices[0].message.content
         
     except Exception as e:
-        print(f"Error generating answer: {e}")
+        print(f"Error generating analysis: {e}")
         return None
 
 # Example usage:
