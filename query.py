@@ -27,8 +27,8 @@ def query_chroma(query_text: str, collection_name: str, n_results: int = 5):
 
     collection = chroma_client.get_collection(name=collection_name)
 
-    # Get query embedding
-    query_embedding = embeddings_client.embed_query(augment_query(query_text))
+    # Remove the augment_query call here since queries are already augmented
+    query_embedding = embeddings_client.embed_query(query_text)
 
     results = collection.query(
         query_embeddings=[query_embedding],
@@ -127,9 +127,11 @@ def augment_query(query_text: str):
     try:
         with open('augment.json', 'r') as f:
             rules = json.load(f)
-            return f"{rules.get('prefix', '')} {query_text} {rules.get('suffix', '')}".strip()
+            return [f"{rule.get('prefix', '')} {query_text} {rule.get('suffix', '')}".strip() 
+                    for rule in rules.get('searches', [])]
     except:
-        return query_text
+        return [query_text]
+
 # Example usage:
 if __name__ == '__main__':
     # Example 1: Query existing data
@@ -166,12 +168,13 @@ if __name__ == '__main__':
 
         # Perform search
         print("\nSearching...")
-        augmented_query = augment_query(query)
-        print("augmented query: ", augmented_query)
-        results = query_and_format_results(augmented_query, collection_name, n_results)
-        
-        # Print results
-        print_search_results(results)
+        augmented_queries = augment_query(query)
+
+        print("augmented queries: ", augmented_queries)
+        for augmented_query in augmented_queries:
+            print(f"\n=== Search augmented query: {augmented_query} ===")
+            results = query_and_format_results(augmented_query, collection_name, n_results)
+            print_search_results(results)
 
         # Ask for another search
         another = input("\nWould you like to do another search? (y/n): ")
