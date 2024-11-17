@@ -1,4 +1,20 @@
 {
-    "prefix": "Find relevant discussions about",
-    "suffix": "focusing on user problems and needs"
+    "searches": [
+        {
+            "prefix": "Find relevant discussions about",
+            "suffix": "focusing on user problems and needs"
+        },
+        {
+            "prefix": "Find discussions about",
+            "suffix": "on competition tools understand"
+        },
+        {
+            "prefix": "Find conversations around",
+            "suffix": "regarding market positioning"
+        },
+        {
+            "prefix": "Search for mentions of",
+            "suffix": "with customer feedback"
+        }
+    ]
 }
