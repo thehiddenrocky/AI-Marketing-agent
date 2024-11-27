@@ -76,73 +76,111 @@ def get_subreddit_posts(subreddit_name):
     posts_data = []
 
     print(f"Fetching posts from r/{subreddit_name}...")
-
+    
+    # Search terms for telecom-related posts
+    search_terms = [
+        "Elisa", "DNA", "Telia", "Lounea",
+        "internet provider", "mobile provider",
+        "broadband", "internet speed",
+        "fiber optic", "5G", "4G"
+    ]
+    
     try:
-        for post in subreddit.new(limit=100):
-            post_info = {
-                'id': post.id,
-                'title': post.title,
-                'author': str(post.author),
-                'score': post.score,
-                'upvotes': post.ups,
-                'downvotes': post.downs,
-                'num_comments': post.num_comments,
-                'created_utc': post.created_utc,
-                'url': post.url,
-                'permalink': post.permalink,
-                'selftext': post.selftext,
-                'comments': []
-            }
-
-            post.comments.replace_more(limit=None)
-            print(f"Fetching comments for post ID {post.id}...")
-            for comment in post.comments.list():
-                comment_info = {
-                    'id': comment.id,
-                    'author': str(comment.author),
-                    'body': comment.body,
-                    'score': comment.score,
-                    'upvotes': comment.ups,
-                    'downvotes': comment.downs,
-                    'created_utc': comment.created_utc,
-                    'parent_id': comment.parent_id,
-                    'link_id': comment.link_id,
-                    'permalink': comment.permalink
-                }
-
-                post_info['comments'].append(comment_info)
-
-            posts_data.append(post_info)
-            time.sleep(0.5)
-
+        # Search for each term
+        for term in search_terms:
+            print(f"Searching for posts containing '{term}'...")
+            
+            # Use Reddit's search function
+            for post in subreddit.search(term, limit=100, sort='relevance'):
+                if post.id not in [p['id'] for p in posts_data]:  # Avoid duplicates
+                    post_info = {
+                        'id': post.id,
+                        'title': post.title,
+                        'author': str(post.author),
+                        'score': post.score,
+                        'upvotes': post.ups,
+                        'downvotes': post.downs,
+                        'num_comments': post.num_comments,
+                        'created_utc': post.created_utc,
+                        'url': post.url,
+                        'permalink': post.permalink,
+                        'selftext': post.selftext,
+                        'comments': []
+                    }
+                    
+                    # Fetch comments
+                    post.comments.replace_more(limit=None)
+                    print(f"Fetching comments for post ID {post.id}...")
+                    for comment in post.comments.list():
+                        if hasattr(comment, 'body') and comment.body:
+                            comment_info = {
+                                'id': comment.id,
+                                'body': comment.body,
+                                'author': str(comment.author),
+                                'score': comment.score,
+                                'upvotes': comment.ups,
+                                'downvotes': comment.downs,
+                                'created_utc': comment.created_utc,
+                                'parent_id': comment.parent_id,
+                                'link_id': comment.link_id,
+                                'permalink': comment.permalink
+                            }
+                            post_info['comments'].append(comment_info)
+                    
+                    posts_data.append(post_info)
+                    time.sleep(1)  # Be nice to Reddit's API
+        
+        print(f"Total posts fetched: {len(posts_data)}")
+        return posts_data
+        
     except Exception as e:
-        print(f"Error fetching posts from r/{subreddit_name}: {e}")
-
-    return posts_data
+        print(f"Error fetching posts: {e}")
+        return posts_data
 
 def get_relevant_topics(query):
     """
-    Use OpenAI to generate relevant search phrases for a query
+    Use OpenAI to generate relevant search phrases for marketing research
     """
     prompt = f"""
-        You are a Reddit search expert who understands how Redditors discuss and search for topics.
-        Given the query "{query}", generate 5 search phrases that will find the most relevant subreddits.
-
-        Consider:
-        - How Redditors naturally phrase their questions/discussions
-        - Common abbreviations and terminology used on Reddit
-        - Related tools, technologies, or concepts frequently discussed
-        - Industry-specific subreddit naming patterns
-        - Problem-focused search terms (as many discussions are about solving problems)
-
-        For example, if query is "project management software":
-        - projectmanagement (direct community)
-        - asana vs trello (tool comparison commonly discussed)
-        - agile tools (methodology + tools)
-        - jira alternatives (tool alternative discussions)
-        - remote team management (broader problem space)
+        You are an expert marketing research analyst specializing in competitive intelligence and consumer insights.
+        Given the query "{query}", generate 5 search phrases that will help uncover valuable market insights.
+        
+        Consider these key marketing research aspects:
+        1. Consumer Sentiment & Voice of Customer:
+           - Customer complaints and praise
+           - Service quality perceptions
+           - Price sensitivity discussions
+           
+        2. Competitive Intelligence:
+           - Competitor comparisons
+           - Market positioning
+           - Service differentiators
+           
+        3. Market Trends:
+           - Emerging technologies
+           - Industry innovations
+           - Consumer behavior shifts
+           
+        4. Product/Service Analysis:
+           - Feature comparisons
+           - Quality assessments
+           - Value propositions
+           
+        5. Brand Perception:
+           - Brand reputation
+           - Customer loyalty factors
+           - Service reliability
+        
+        For example, if query is "DNA broadband":
+        - DNA vs Elisa broadband speed comparison
+        - DNA internet customer service experience
+        - DNA fiber optic coverage areas review
+        - DNA broadband pricing complaints
+        - DNA internet reliability issues
+        
         Return exactly 5 search phrases, one per line.
-        Focus on phrases that would lead to active, relevant subreddit communities.
+        Focus on phrases that real customers would use in discussions.
+        Ensure phrases will find relevant discussions about market positioning, competitive advantages, and customer pain points.
         Do not include any bullets, numbers, or prefixes.
     """
     
@@ -164,12 +202,11 @@ def get_relevant_topics(query):
             if phrase.strip() and not phrase.startswith(('-', '*', '•', '1', '2', '3', '4', '5'))
         ]
         
-        print(f"Generated search phrases: {search_phrases}")
+        print(f"Generated marketing research phrases:\n" + "\n".join(f"- {phrase}" for phrase in search_phrases))
         return search_phrases
     except Exception as e:
         print(f"Error generating topics: {e}")
         return [query]  # Fallback to original query
-
 
 def process_and_store_in_chroma(posts_data: List[Dict], collection_name: str):
     chroma_client = chromadb.PersistentClient(path="chroma_db")
@@ -193,31 +230,37 @@ def process_and_store_in_chroma(posts_data: List[Dict], collection_name: str):
     print(f"Processing posts and comments for {collection_name}...")
 
     for post in posts_data:
+        # Always include the title as a document
+        post_content = f"Title: {post['title']}\n\n"
         if post["selftext"]:
-            chunks = text_splitter.split_text(post["selftext"]) if len(post["selftext"]) > 500 else [post["selftext"]]
+            post_content += post["selftext"]
+        
+        # Split the combined content
+        chunks = text_splitter.split_text(post_content) if len(post_content) > 500 else [post_content]
+        chunk_embeddings = embeddings_client.embed_documents(chunks)
 
-            chunk_embeddings = embeddings_client.embed_documents(chunks)
+        for chunk, embedding in zip(chunks, chunk_embeddings):
+            documents.append(chunk)
+            metadatas.append({
+                "id": post["id"],
+                "type": "post",
+                "title": post["title"],
+                "author": post["author"],
+                "url": post["url"],
+                "created_utc": str(post["created_utc"]),
+                "score": post["score"],
+                "num_comments": post["num_comments"]
+            })
+            ids.append(f"doc_{doc_id}")
+            doc_id += 1
 
-            for chunk, embedding in zip(chunks, chunk_embeddings):
-                documents.append(chunk)
-                metadatas.append({
-                    "id": post["id"],
-                    "type": "post",
-                    "title": post["title"],
-                    "author": post["author"],
-                    "url": post["url"],
-                    "created_utc": str(post["created_utc"])
-                })
-                ids.append(f"doc_{doc_id}")
-                doc_id += 1
-
+        # Process comments
         for comment in post.get("comments", []):
             if comment["body"]:
-                chunks = text_splitter.split_text(comment["body"]) if len(comment["body"]) > 500 else [comment["body"]]
+                comment_chunks = text_splitter.split_text(comment["body"]) if len(comment["body"]) > 500 else [comment["body"]]
+                comment_embeddings = embeddings_client.embed_documents(comment_chunks)
 
-                chunk_embeddings = embeddings_client.embed_documents(chunks)
-
-                for chunk, embedding in zip(chunks, chunk_embeddings):
+                for chunk, embedding in zip(comment_chunks, comment_embeddings):
                     documents.append(chunk)
                     metadatas.append({
                         "id": comment["id"],
@@ -225,12 +268,13 @@ def process_and_store_in_chroma(posts_data: List[Dict], collection_name: str):
                         "post_id": post["id"],
                         "post_title": post["title"],
                         "author": comment["author"],
-                        "parent_id": comment["parent_id"],
-                        "created_utc": str(comment["created_utc"])
+                        "created_utc": str(comment["created_utc"]),
+                        "score": comment["score"]
                     })
                     ids.append(f"doc_{doc_id}")
                     doc_id += 1
 
+        # Add documents in batches to avoid memory issues
         if len(documents) >= 500:
             embeddings = embeddings_client.embed_documents(documents)
             collection.add(
@@ -239,7 +283,6 @@ def process_and_store_in_chroma(posts_data: List[Dict], collection_name: str):
                 metadatas=metadatas,
                 ids=ids
             )
-            print(f"Added batch of {len(documents)} documents to Chroma")
             documents = []
             metadatas = []
             ids = []
@@ -253,70 +296,55 @@ def process_and_store_in_chroma(posts_data: List[Dict], collection_name: str):
             metadatas=metadatas,
             ids=ids
         )
-        print(f"Added final batch of {len(documents)} documents to Chroma")
 
+    print(f"Added {doc_id} documents to collection {collection_name}")
     return collection.count()
 
 
+def process_subreddit(subreddit_name: str):
+    """
+    Process a single subreddit: fetch its data and store in both JSON and ChromaDB
+    """
+    print(f"\nProcessing r/{subreddit_name}...")
+    
+    # Get subreddit info
+    subreddit_info = get_subreddit_info(subreddit_name)
+    if not subreddit_info:
+        print(f"Could not retrieve information for r/{subreddit_name}")
+        return
+    
+    # Get posts and comments
+    posts = get_subreddit_posts(subreddit_name)
+    if not posts:
+        print(f"No posts found in r/{subreddit_name}")
+        return
+        
+    # Save to JSON
+    data_to_save = {
+        'subreddit_info': subreddit_info,
+        'posts': posts
+    }
+    
+    filename = f"{subreddit_name}_data.json"
+    try:
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(data_to_save, f, ensure_ascii=False, indent=4)
+        print(f"Data saved to {filename}")
+    except Exception as e:
+        print(f"Error saving JSON data: {e}")
+    
+    # Store in ChromaDB
+    try:
+        collection_name = f"reddit_{subreddit_name.lower()}"
+        doc_count = process_and_store_in_chroma(posts, collection_name)
+        print(f"Stored {doc_count} documents in ChromaDB collection '{collection_name}'")
+    except Exception as e:
+        print(f"Error storing in ChromaDB: {e}")
+
+
 def main():
-    query = input("Enter the search query for subreddits: ")
-    subreddit_limit = int(input("Enter the number of subreddits to find: "))
-
-    search_terms = get_relevant_topics(query)
-    found_subreddits = search_subreddits(search_terms, limit=subreddit_limit)
-
-    if not found_subreddits:
-        print("No subreddits with enough subscribers found with the given query.")
-        return
-
-    print("\nRetrieving subreddit information...")
-    subreddit_infos = []
-    for subreddit_name in found_subreddits:
-        info = get_subreddit_info(subreddit_name)
-        if info:
-            subreddit_infos.append(info)
-        time.sleep(1)
-
-    if not subreddit_infos:
-        print("No subreddit information retrieved.")
-        return
-
-    sorted_subreddits = sorted(subreddit_infos, key=lambda x: x['subscribers'], reverse=True)
-
-    print("\nRanked Subreddits:")
-    for idx, info in enumerate(sorted_subreddits, start=1):
-        print(f"{idx}. r/{info['name']} - {info['subscribers']} subscribers")
-
-    for info in sorted_subreddits:
-        if info['subscribers'] > 50000:
-            subreddit_name = info['name']
-            print(f"\nProcessing r/{subreddit_name}...")
-
-            posts = get_subreddit_posts(subreddit_name)
-
-            data_to_save = {
-                'subreddit_info': info,
-                'posts': posts
-            }
-
-            filename = f"{subreddit_name}_data.json"
-            try:
-                with open(filename, 'w', encoding='utf-8') as f:
-                    json.dump(data_to_save, f, ensure_ascii=False, indent=4)
-                print(f"Data from r/{subreddit_name} saved to {filename}")
-            except Exception as e:
-                print(f"Error saving data for r/{subreddit_name}: {e}")
-
-            try:
-                collection_name = f"reddit_{subreddit_name.lower()}"
-                doc_count = process_and_store_in_chroma(posts, collection_name)
-                print(f"Processed and stored {doc_count} documents in Chroma collection '{collection_name}'")
-            except Exception as e:
-                print(f"Error processing and storing data in Chroma: {e}")
-
-            time.sleep(2)
-
-    print("Data collection, processing, and embedding completed.")
+    subreddit_name = input("Enter the subreddit name (without r/): ").strip()
+    process_subreddit(subreddit_name)
 
 
 if __name__ == '__main__':
